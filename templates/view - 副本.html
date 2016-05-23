@@ -1,0 +1,527 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title> 远程监控主页 </title>
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap_ori.css' %}" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="{% static 'css/bootstrap-theme.css' %}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/view.css' %}" rel="stylesheet">
+    <!-- 时间选择器 -->
+    <link href="{% static 'css/bootstrap-datetimepicker.css' %}" rel="stylesheet">
+  </head>
+  <body role="document">
+    <nav class="navbar navbar-default navbar-static-top" style="margin:0">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" role="button">远程监控房</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li><a href="/view/">首页</a></li>
+            <li><a href="#">我</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- 版头。头图在css文件/.header修改 -->
+    <div class="header">
+      <div class="container" style="height:100%;position:relative">
+        <h3>技术让生活更美</h3>
+        <!-- 右下角的初次使用导航 -->
+        <a href="#" style="position:absolute;bottom:0;right:15px">
+          <p style="color:#ccc;font-size:15px;">项目简介 <small class="glyphicon glyphicon-chevron-right" style="color:inherit"></small>
+          </p>
+        </a>
+      </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="container">
+      <div class="row">
+        <!-- 右侧卡片式部位分类 -->
+        <div class="col-md-7 col-md-push-5" style="padding:10px;padding-top:0;margin-top:10px;padding-bottom:0">
+          <!-- 概览 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">传感设备概览</p>
+          </div>
+          <div class="card" style="padding-bottom:0;font-weight:bold;color:#333;font-size:15px">
+            <!-- 日志 -->
+            <p style="color:#333">
+              新监控日志：
+              <a data-toggle="modal" data-target="#log" role="button" style="font-weight:normal"><span id="d1-status"> ... </span>点击查看</a>
+              <!-- modal：悬浮窗口 -->
+              <div class="modal fade" id="log" role="dialog" aria-labelledby="监控日志" ariahidden="true">
+                <div class="modal-dialog" style="margin-top:100px">
+                  <div class="modal-content">
+                    <!-- 顶部和标题 -->
+                    <div class="modal-header">
+                      <!-- 关闭按钮 -->
+                      <button class="close" data-dismiss="modal" aria-hidden="true"> &times </button>
+                      <p class="modal-title" style="font-size:17px" id="">监控日志</p>
+                    </div>
+                    <!-- body，内容部分 -->
+                    <div class="modal-body" style="min-height:120px;font-weight:normal">
+                      
+                    </div>
+                    <div class="modal-footer" style="font-weight:normal">
+                      <a class="pull-left" role="button">查看全部</a>
+                      <a class="pull-right" role="button">创建用户日志</a>
+                    </div>
+                  </div><!-- modal-content -->
+                </div><!-- modal-dialog -->
+              </div><!-- modal -->
+            </p>
+            <!-- 设备信息 -->
+            <p style="color:#333">
+               已添加设备：<a href="/view/device/"> {{cnt}} <b>设备管理</b></a>
+            </p>
+            <!-- 快速查找设备 -->
+            <div style="width:100%;height:34px;">
+              <!-- 确定按钮 -->
+              <button id="find" onclick="findItem()" class="pull-right btn btn-default" style="border-top-left-radius:0;border-bottom-left-radius:0"> 确定 </button>
+              <!-- 搜索框 -->
+              <div style="overflow:hidden;font-weight:normal;">
+                <input id="searchBox" style="width:100%;height:34px;padding-left:5px;background-color:#fff;border: 1px solid #c0c0c0;border-right:0;border-top-left-radius:4px;border-bottom-left-radius:4px;" placeholder="快速查找设备..." onkeydown="if(event.keyCode==13){searchBox.blur();findItem()}" />
+              </div>
+            </div>
+            <!-- 雷达监控 -->
+            <p style="color: #333;margin-top:15px">
+               雷达重点监控：
+            </p>
+            <!-- 雷达图主体 -->
+            <div style="width:70%;margin-left:auto;margin-right:auto">
+              <canvas id="radarChart" style="width: 100px;height: 90px;"></canvas>
+            </div>
+          </div> <!-- card -->
+    {% if sensors %}
+      {% for cla in sensors %}
+        {% if cla.items %}
+          <!-- 传感设备分类 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> {{cla.type}}传感设备 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+          {% for sensor in cla.items %}
+            <!-- 传感设备实物 -->
+            <a name="{{sensor.name}}"></a>
+            <p id="{{sensor.id}}" style="color:#333;font-weight:bold;margin-bottom:10px"> {{sensor.name}} </p>
+            <!-- 数据 -->
+            <p style="color: #333">
+              实时数值： <span id="{{sensor.id}}_val"> ... </span>
+            </p>
+            <!-- 时间 -->
+            <p style="color: #333">
+              更新时间： <span id="{{sensor.id}}_time"> ... </span>
+            </p>
+            <!-- 安全范围 -->
+            <p style="color: #333">
+              安全范围：<span> {{sensor.safetyCond}} </span>
+            </p>
+            <br/>
+          {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+          <div style="height: 100px;padding: 25px;color:#333;font-size:15px">
+            亲，这里什么都没有，快去<a href="/view/device/"><b>设备管理</b></a>中添加传感设备吧
+          </div>
+    {% endif %}
+          <!-- 历史数据查询 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">历史数据查询</p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <form id="form_hisData" onsubmit="return hisData()" method="post">
+              {% csrf_token %}
+              <!-- 物件 -->
+              <div>
+                <p style="color: #333">
+                  <span class="pull-left" style="margin-right:4px">选择设备：</span>
+                  <!-- <input size="10" type="text" name="sensorId" value="sensor15" style="margin-bottom:5px;border: 1px solid #c0c0c0;border-radius:2px" readonly> -->
+                  <select name="sensorId" class="pull-left" style="width: 148px;margin-bottom:5px;border: 1px solid #c0c0c0;border-radius:2px" required>
+                    <option value=""></option>
+                  {% for cla in sensors %}{% for sensor in cla.items %}
+                    <option value="{{sensor.id}}">{{sensor.name}}</option>
+                  {% endfor %}{% endfor %}
+                  </select>
+                <div style="clear:both"></div>
+                </p>
+              </div>
+              <!-- 时间选择 -->
+              <p style="color: #333">
+                 选择时间：
+                <!-- 开始时间 -->
+                <input name="starTime" id="timeSelect" class="form_datetime" size="16" type="text" value=""style="padding-left:5px;margin-bottom:5px;border: 1px solid #c0c0c0;border-radius:2px" required>
+                 至 
+                <!-- 结束时间 -->
+                <input name="endTime" id="timeSelect" class="form_datetime" size="16" type="text" value="" style="padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" required>
+                <!-- 确定 -->
+                <button class="pull-right btn btn-link" style="color:#333" type="submit">点击查询</button>
+                <!-- <a class="pull-right" role="button" type="submit"> 点击查询 </a> -->
+              </p>
+            </form>
+            <!-- 图表 -->
+            <div style="width:100%;margin-left:auto;margin-right:auto">
+              <canvas id="lineChart" style=""></canvas>
+            </div>
+            <br/>
+          </div> <!-- card -->
+        </div> <!-- col -->
+        <!-- 左侧col -->
+        <div class="col-md-5 col-md-pull-7" style="padding:10px;padding-top:0">
+          <!-- 上边黑条 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">主机运行情况</p>
+          </div>
+          <div class="card" style="font-weight:bold;color:#333;font-size:15px">
+            <!-- CPU温度 -->
+            <div style="display:inline;width:100%;float:left">
+              <!-- 左侧文字，固定宽度：100px -->
+              <p class="pull-left" style="width:100px">CPU温度：</p>
+              <!-- 右侧进度条 -->
+              <!-- 数值，固定宽度：50px -->
+              <div class="pull-left" style="width:50px">
+                37 ℃
+              </div>
+            </div>
+            <!-- CPU使用率 -->
+            <div style="display:inline;width:100%;float:left">
+              <!-- 左侧文字，固定宽度：100px -->
+              <p class="pull-left" style="width:100px">CPU使用率：</p>
+              <!-- 数值，固定宽度：50px -->
+              <div class="pull-left" style="width:50px">
+                80%
+              </div>
+              <!-- 右侧进度条 -->
+              <div style="margin-left:150px">
+                <!-- 进度条 -->
+                <div class="pull-left progress-frame">
+                  <div class="power-bar" style="width:80%"></div>
+                  <div class="power-point"></div>
+                </div>
+              </div>
+            </div>
+            <!-- RAM -->
+            <div style="display:inline;width:100%;float:left">
+              <!-- 左侧文字，固定宽度：100px -->
+              <p class="pull-left" style="width:100px">RAM：</p>
+              <!-- 数值，固定宽度：50px -->
+              <div class="pull-left" style="width:50px">
+                65%
+              </div>
+              <!-- 右侧进度条 -->
+              <div style="margin-left:150px">
+                <!-- 进度条 -->
+                <div class="pull-left progress-frame">
+                  <div class="power-bar" style="width:65%"></div>
+                  <div class="power-point"></div>
+                </div>
+              </div>
+            </div>
+            <!-- ROM -->
+            <div style="display:inline;width:100%;float:left">
+              <!-- 左侧文字，固定宽度：100px -->
+              <p class="pull-left" style="width:100px">ROM：</p>
+              <!-- 数值，固定宽度：50px -->
+              <div class="pull-left" style="width:50px">
+                20%
+              </div>
+              <!-- 右侧进度条 -->
+              <div style="margin-left:150px">
+                <!-- 进度条 -->
+                <div class="pull-left progress-frame">
+                  <div class="power-bar" style="width:20%"></div>
+                  <div class="power-point"></div>
+                </div>
+              </div>
+            </div>
+            <!-- 截图 -->
+            <p>
+              <span style="margin-right:35px">实时截图</span>
+              <a onclick="getScrSht()" data-toggle="modal" data-target="#prtSc" role="button" style="font-weight:normal">点击查看</a>
+              <!-- modal：悬浮窗口 -->
+              <div class="modal fade" id="prtSc" role="dialog" aria-labelledby="查看实时截图" ariahidden="true">
+                <div class="modal-dialog" style="margin-top:100px">
+                  <div class="modal-content">
+                    <!-- 顶部和标题 -->
+                    <div class="modal-header">
+                      <!-- 关闭按钮 -->
+                      <button class="close" data-dismiss="modal" aria-hidden="true"> &times </button>
+                      <p class="modal-title" style="font-size:17px" id="">查看实时截图</p>
+                    </div>
+                    <!-- body，内容部分 -->
+                    <div class="modal-body" style="min-height:70%;font-weight:normal">
+                      <p>
+                      截图时间： <span id="scrShTime"> </span>
+                        <a onclick="getScrSht()" class="pull-right" role="button">刷新</a>
+                      </p>
+                      <img id="scrShtImg" class="img-responsive" />
+                    </div>
+                  </div><!-- modal-content -->
+                </div><!-- modal-dialog -->
+              </div><!-- modal -->
+            </p>
+            <br/>
+          </div>
+          <!-- 电器设备 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> 电器设备 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <p id="l1-nick" style="color:#333;font-weight:bold;margin-bottom:10px"> 小桌灯 </p>
+            <!-- 状态 -->
+            <p style="color: #333">
+              当前状态：<span id="l1-status"> ... </span>
+            </p>
+            <!-- 开始时间 -->
+            <p style="color: #333">
+               开始时间：<span id="l1-time"> ... </span>
+            </p>
+            <br/>
+          </div> <!-- card -->
+          <!-- 关于我们 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">Powered by</p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <!-- 指导老师 -->
+            <div style="text-align: center;">
+              <h3 style="color: #333;margin-top:10px;margin-bottom:15px">
+              徐兴</h3>
+            </div>
+            <p>指导老师。电子工程学院副高级教授</p>
+            <p>XXXXXXXXXXXXXXX</p>
+            <!-- 分界线 -->
+            <div class="dividing_line"></div>
+            <!-- Ivan -->
+            <div class="img-head" style="margin-top:9px">
+              <img src="{% static 'img/Ivan1.jpg' %}" class="img-responsive" />
+            </div>
+            <div style="text-align: center;">
+              <h3 style="color: #333;margin-top:10px;margin-bottom:15px">
+              文鹏程 - Ivan</h3>
+            </div>
+            <p>华南农业大学12光信1班，产品、技术、智能硬件爱好者</p>
+            <p>XXXXXXXXXXXXXXX</p>
+            <br/>
+          </div><!-- card -->
+        </div><!-- col -->
+        <!-- modal安全警报 -->
+        <div class="modal fade" id="warning" role="dialog" aria-labelledby="安全警报" ariahidden="true">
+          <div class="modal-dialog" style="margin-top:100px">
+            <div class="modal-content">
+              <!-- 顶部和标题 -->
+              <div class="modal-header">
+                <!-- 关闭按钮 -->
+                <button class="close" data-dismiss="modal" aria-hidden="true"> &times </button>
+                <p class="modal-title" style="font-size:17px;font-weight:bold" id="">安全警报</p>
+              </div>
+              <!-- body，内容部分 -->
+              <div class="modal-body" style="min-height:120px;font-weight:normal">
+                <p>传感设备检测的数据出现异常：超出安全范围</p>
+                <p>请及时处理</p>
+              </div>
+            </div><!-- modal-content -->
+          </div><!-- modal-dialog -->
+        </div><!-- modal -->
+      </div><!-- row -->
+    </div><!-- container -->
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.js' %}"></script>
+    <script src="{% static 'js/Chart.js' %}"></script>
+    <!-- 遍历填充、更新实时数据函数 -->
+    <script type="text/javascript">
+      function dataFiller(sensors_data){
+        $.each(sensors_data, function(i, item){
+          document.getElementById(item.id+"_val").style.color = "#333";
+          document.getElementById(item.id+"_val").style.fontWeight = "normal";
+          document.getElementById(item.id+"_val").innerHTML = item.val;
+          document.getElementById(item.id+"_time").innerHTML = item.time;
+          // $("#warning").modal('hide');
+          if (!item.safe) {
+            document.getElementById(item.id+"_val").style.color = "#C82114";
+            document.getElementById(item.id+"_val").style.fontWeight = "bold";
+            document.getElementById(item.id+"_val").innerHTML = item.val+"&nbsp;&nbsp;出现异常！";
+            // alert(item.type+'传感设备：\n“'+item.name+'”发出安全警报！\n');
+            // 打开安全警报提示框
+            $("#warning").modal('show');
+            window.location.href = '#' + item.name;
+          };
+        });
+      }
+    </script>
+    <!-- 更新雷达图 -->
+    <script type="text/javascript">
+      function radarUpdater(radar_data){
+        $.each(radar_data, function(i, data){
+          radarInstance.datasets[0].points[i].value = data;
+          radarInstance.update();
+        });
+      }
+    </script>
+    <!-- 初始化两个表格 -->
+    <script type="text/javascript">
+      var lineChartData = {
+        labels : ['start', 'end'],
+        datasets : [
+          {
+            fillColor : "rgba(28, 141, 239,0.2)",
+            strokeColor : "rgba(28, 141, 239,1)",
+            pointColor : "rgba(28, 141, 239,1)",
+            pointStrokeColor : "#fff",
+            pointHighlightFill : "#fff",
+            pointHighlightStroke : "rgba(28, 141, 239,1)",
+            data : [100, 100]
+          },
+        ]
+      };
+      var radarChartData = {
+        labels : [{% for sensor in radarSensors %} "{{sensor.name}}", {% endfor %}],
+        datasets : [
+          {
+            label: "实时值",
+            fillColor: "rgba(28, 141, 239,0.2)",
+            strokeColor: "rgba(28, 141, 239,1)",
+            pointColor: "rgba(28, 141, 239,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightStroke: "rgba(28, 141, 239,1)",
+            data: [{% for sensor in radarSensors %} 10, {% endfor %}]
+          },
+        ]
+      };
+      var radarEle = document.getElementById("radarChart").getContext("2d");
+      var sensorCtx = document.getElementById("lineChart").getContext("2d");
+      var radarInstance = new Chart(radarEle).Radar(radarChartData, {
+        responsive : true,
+        animation: false,
+        pointLabelFontSize : 15,
+        pointLabelFontFamily : "'微软雅黑'",
+      });
+      var lineInstance = new Chart(sensorCtx).Line(lineChartData, {
+        responsive: true,
+        animation: false,
+      });
+    </script>
+    <!-- 开始更新数据 -->
+    <script type="text/javascript">
+      // 第一次加载立即绘图
+      $.ajaxSetup({cache:false});
+      (function(){reNew()})();
+      // 随后，每隔N秒重新查询数据、绘制表格
+      onload = function(){
+      setInterval(function(){
+        reNew();
+        }, 3000);
+      };
+      // ajax查询数据、修改数据、绘制图表
+      function reNew(){
+        // 查询
+        $.ajax({
+          type: "GET",
+          url: "/api/items/",
+          dataType: "json",
+          async: false,  // 不使用异步请求，使得获得最新数据最后再绘制第一次表格
+          success: function(data){
+            radarUpdater(data.radar_data);
+            dataFiller(data.sensors_data);
+          }
+        });
+      };
+    </script>
+    <!-- 获取截图函数 -->
+    <script type="text/javascript">
+      document.getElementById("scrShtImg").src = '';
+      function getScrSht(){
+        $.ajax({
+          type: "GET",
+          url: "/api/prtSc",
+          dataType: "json",
+          success: function(data){
+            if (data.result=="success"){
+              document.getElementById("scrShtImg").src = data.imgUrl;
+              document.getElementById("scrShTime").innerHTML = data.time;
+            }
+            else{
+              alert(data.msg);
+            }
+          }
+        });
+      }
+    </script>
+    <!-- 创建时间选择器 -->
+    <script type="text/javascript">
+        $(".form_datetime").datetimepicker({
+            format: "hh:ii,yyyy-mm-dd",
+            // minView: 'day',
+            showMeridian: true,
+            autoclose: true,
+            todayBtn: true,
+        });
+    </script>
+    <!-- 快速寻找并定位至页面内设备 -->
+    <script type="text/javascript">
+      function findItem(){
+        // 获取搜索框内的值并在items中寻找该设备
+        // alert('fadfd');
+        var target = $("#searchBox").val();
+        if(typeof document.getElementsByName(target)[0]=="object"){
+          window.location.href = '#' + target;
+        }
+        else{
+          alert('未找到名为“'+target+'”的设备');
+          document.getElementById("searchBox").focus();
+        }
+      };
+    </script>
+    <!-- ajax提交表单查询历史数据 -->
+    <script type="text/javascript">
+      function hisData(){
+        // alert('ajax');
+        var $form = $("#form_hisData");
+        var formData = new FormData($form.get(0));
+        $.ajax({
+          url: '/api/hisdata/',
+          type: 'POST',
+          data: formData,
+          processData: false, // 告诉jQuery不要去处理发送的数据
+          contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+          success: function(info){
+             //处理取得的result
+            if (info.result=="success"){
+              // 首先遍历已存在的数值，逐个删除
+              $.each(lineInstance.datasets[0].points, function(i){
+                lineInstance.removeData();
+              });              
+              // 遍历返回的data，逐个添加
+              $.each(info.data, function(i, set){
+                lineInstance.addData([set[1]], set[0]);
+              });
+            }
+            else{
+              alert('查询失败：\n'+info.msg);
+            }
+          }
+        });
+        return false;
+      }
+    </script>
+  </body>
+</html>

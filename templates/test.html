@@ -1,0 +1,42 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>templay</title>
+  </head>
+
+  <body>
+    <h1>设置csrf至header中</h1>
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript">
+      (function(){
+        setCsrf(xhr, settings)
+      })()
+
+      function setCsrf(xhr, settings){
+        xhr.setRequestHeader("X-CSRFToken", {{ csrf_token }});
+      };
+
+      // (function(){p()})()
+
+      // function p(){
+      //   $.ajax({
+      //     // beforeSend: function(xhr, settings){
+      //     //     var csrftoken = $.cookie('csrftoken');
+      //     //     xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      //     // };
+      //     type: "POST",
+      //     url: "/api/submit/",
+      //     // dataType: "json",
+      //     data: {
+      //         id: 1,
+      //         status: 1,
+      //         // csrfmiddlewaretoken: $.cookie('csrftoken'),
+      //     },
+
+      //   });
+      // };
+    </script>
+  </body>
+</html>

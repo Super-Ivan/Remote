@@ -1,0 +1,216 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title> 用户管理 </title>
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap_ori.css' %}" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="{% static 'css/bootstrap-theme.css' %}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/view.css' %}" rel="stylesheet">
+    <!-- 时间选择器 -->
+    <link href="{% static 'css/bootstrap-datetimepicker.css' %}" rel="stylesheet">
+  </head>
+  <body role="document">
+    <nav class="navbar navbar-default navbar-static-top" style="margin:0">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" role="button">远程监控房</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li><a href="/view/">首页</a></li>
+          {% if user.is_authenticated %}<li><a href="/user/">{{user.username}}</a></li>
+          <li><a href="/user/logout/">退出登录</a></li>
+          {% else %}<li><a href="/user/login/">登录</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- 版头。头图在css文件/.header修改 -->
+    <div class="header">
+      <div class="container" style="height:100%;position:relative">
+        <h3>技术让生活更美</h3>
+        <!-- 右下角的初次使用导航 -->
+        <a href="#" style="position:absolute;bottom:0;right:15px">
+          <p style="color:#ccc;font-size:15px;">项目简介 <small class="glyphicon glyphicon-chevron-right" style="color:inherit"></small>
+          </p>
+        </a>
+      </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="container">
+      <div class="row">
+        <!-- 右侧卡片式部位分类 -->
+        <div class="col-md-7 col-md-push-5" style="padding:10px;padding-top:0;margin-top:10px;padding-bottom:0">
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> 权限分配 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <form method="POST">
+            {% csrf_token %}
+              <input type="hidden" name='user_id' value="{{user_info.id}}" />
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>选择</th>
+                    <th>权限</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for p in perms %}
+                  <tr>
+                    <td><input name="selected" type="checkbox" value="{{p.codename}}" {% if p.has_perm %}checked="checked"{% endif %}/></td>
+                    <td>{{p.name}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+              <button class="pull-right btn btn-link" style="color:#333;font-weight:bold" type="submit">提交</button>
+            </form>
+              <br/>
+              <br/>
+          </div>
+        </div> <!-- col -->
+        <!-- 左侧col -->
+        <div class="col-md-5 col-md-pull-7" style="padding:10px;padding-top:0">
+          <!-- 上边黑条 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">用户基本信息</p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            </br>
+            <p>用户名：{{user_info.username}}</p>
+            <p>用户id：{{user_info.id}}</p>
+            <br/>
+          </div><!-- card -->
+        </div><!-- col -->
+      </div><!-- row -->
+    </div><!-- container -->
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.js' %}"></script>
+    <!-- 快速寻找并定位至页面内设备 -->
+    <script type="text/javascript">
+      function findItem(){
+        // 获取搜索框内的值并在items中寻找该设备
+        var target = $("#searchBox").val();
+        if(typeof document.getElementsByName(target)[0]=="object"){
+          window.location.href = '#' + target;
+        }
+        else{
+          alert('未找到名为“'+target+'”的设备');
+          document.getElementById("searchBox").focus();
+        }
+      };
+    </script>
+    <!-- 删除设备 -->
+    <script type="text/javascript">
+      function deleteSensor(sensorName, sensorId){
+        var c = confirm('你确定要删除“'+sensorName+'”吗？');
+        if(c==true){
+          $.ajax({
+            type: "GET",
+            url: "/api/deletesensor/?id="+sensorId,
+            success: function(info){
+              // alert(data.result);
+              if(info.result=="success"){
+                alert("删除成功");
+                window.location.reload();
+              }
+              else{
+                alert('删除失败。具体原因：\n'+info.msg);
+              }
+            }
+          });
+        }
+      };
+    </script>
+    <!-- 添加至雷达监控 -->
+    <script type="text/javascript">
+      function toRadar(sensorId) {
+        $.ajax({
+          type: "GET",
+          url: "/api/toradar/?id="+sensorId,
+          success: function(info){
+            if(info.result=="success"){
+              alert("添加成功！");
+            }
+            else{
+              alert('添加失败。具体原因：\n'+info.msg);
+            }
+          }
+        });
+      };
+    </script>
+    <!-- ajax提交表单创建新设备 -->
+    <script type="text/javascript">
+      function ajaxPost(){
+        // alert('ajax');
+        var $form = $("#form_addDevice");
+        var formData = new FormData($form.get(0));
+        $.ajax({
+          url: '/api/create/',
+          type: 'POST',
+          data: formData,
+          processData: false, // 告诉jQuery不要去处理发送的数据
+          contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+          success: function(info){
+             //处理取得的result
+            if (info.result=="success"){
+              alert("恭喜！“"+info.sensorName+"”创建成功！\n该设备的数据提交接口是\n“http://"+window.location.hostname+info.submitUrl+"”\n下一步，请将传感设备的实时数据发送至提交接口，把数据值填在接口最后(即“val=”后边)");
+              window.location.reload();
+            }
+            else{
+              alert('添加失败。具体原因：\n'+info.msg);
+            }
+          }
+        });
+        return false;
+      }
+    </script>
+    <!-- ajax修改安全范围 -->
+    <script type="text/javascript">
+      function safetyCon(sensorId){
+        var $form = $("#"+sensorId+"_form_safeCon");
+        var formData = new FormData($form.get(0));
+        $.ajax({
+          url: '/api/safetycon/',
+          type: 'POST',
+          data: formData,
+          processData: false, // 告诉jQuery不要去处理发送的数据
+          contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+          success: function(info){
+             //处理取得的result
+            if (info.result=="success"){
+              // 定位至modal并关闭
+              $("#"+sensorId+"_modal").modal('hide');
+              alert("修改成功");
+              window.location.reload();
+            }
+            else{
+              alert("修改失败，具体原因: \n"+info.msg);
+            };
+          }
+        });
+        return false;
+      }
+    </script>
+
+  </body>
+</html>

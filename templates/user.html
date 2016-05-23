@@ -1,0 +1,122 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title> {{user.username}}的基本信息 </title>
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap_ori.css' %}" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="{% static 'css/bootstrap-theme.css' %}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/view.css' %}" rel="stylesheet">
+    <!-- 时间选择器 -->
+    <link href="{% static 'css/bootstrap-datetimepicker.css' %}" rel="stylesheet">
+  </head>
+  <body role="document">
+    <nav class="navbar navbar-default navbar-static-top" style="margin:0">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" role="button">远程监控房</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li><a href="/view/">首页</a></li>
+          {% if user.is_authenticated %}<li><a href="/user/">{{user.username}}</a></li>
+          <li><a href="/user/logout/">退出登录</a></li>
+          {% else %}<li><a href="/user/login/">登录</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- 版头。头图在css文件/.header修改 -->
+    <div class="header">
+      <div class="container" style="height:100%;position:relative">
+        <h3>技术让生活更美</h3>
+        <!-- 右下角的初次使用导航 -->
+        <a href="#" style="position:absolute;bottom:0;right:15px">
+          <p style="color:#ccc;font-size:15px;">项目简介 <small class="glyphicon glyphicon-chevron-right" style="color:inherit"></small>
+          </p>
+        </a>
+      </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="container">
+      <div class="row">
+        <!-- 右侧卡片式部位分类 -->
+        <div class="col-md-7 col-md-push-5" style="padding:10px;padding-top:0;margin-top:10px;padding-bottom:0">
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> 修改密码 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <form action="/user/setpassword/" method="POST">
+            {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{user.id}}" />
+              <p style="color:#333">
+                <span style="margin-right:30px">新密码：</span>
+                <input id="inputPassword" name="newPassword" type="password" value="" style="width:240px;padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" onchange="checkPasswords()" required>
+              </p>
+              <p style="color:#333">
+                <span style="margin-right:30px">请确认：</span>
+                <input id="inputPassword1" type="password" value="" style="width:240px;padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" onchange="checkPasswords()" required>
+              </p>
+              <button class="pull-right btn btn-link" style="color:#333;font-weight:bold" type="submit">提交</button>
+            </form>
+            <br/>
+            <br/>
+          </div>
+        {% if user.is_superuser %}
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> 用户授权 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <p>你是超级管理员，可<a href="/user/manage/"><b>点击此处</b></a>对所有用户进行授权管理</p>
+            <br/>
+          </div>
+        {% endif %}
+        </div> <!-- col -->
+        <!-- 左侧col -->
+        <div class="col-md-5 col-md-pull-7" style="padding:10px;padding-top:0">
+          <!-- 上边黑条 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">用户基本信息</p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <p>用户名：{{user.username}}</p>
+            <p>用户id：{{user.id}}</p>
+            <p>用户类型：{% if user.is_staff %}认证用户{% else %}非认证用户{% endif %}</p>
+            <br/>
+          </div><!-- card -->
+        </div><!-- col -->
+      </div><!-- row -->
+    </div><!-- container -->
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.js' %}"></script>
+    <!-- 快速寻找并定位至页面内设备 -->
+    <script type="text/javascript">
+      function checkPasswords() {
+          var passl = document.getElementById("inputPassword");
+          var pass2 = document.getElementById("inputPassword1");
+          if (passl.value != pass2.value)
+              pass2.setCustomValidity("两次密码必须输入一致！");
+          else
+              pass2.setCustomValidity('');
+      }
+    </script>
+
+  </body>
+</html>

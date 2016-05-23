@@ -1,0 +1,331 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title> 设备管理 </title>
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap_ori.css' %}" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="{% static 'css/bootstrap-theme.css' %}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/view.css' %}" rel="stylesheet">
+    <!-- 时间选择器 -->
+    <link href="{% static 'css/bootstrap-datetimepicker.css' %}" rel="stylesheet">
+  </head>
+  <body role="document">
+    <nav class="navbar navbar-default navbar-static-top" style="margin:0">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" role="button">远程监控房</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li><a href="/view/">首页</a></li>
+          {% if user.is_authenticated %}<li><a href="/user/">{{user.username}}</a></li>
+          <li><a href="/user/logout/">退出登录</a></li>
+          {% else %}<li><a href="/user/login/">登录</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- 版头。头图在css文件/.header修改 -->
+    <div class="header">
+      <div class="container" style="height:100%;position:relative">
+        <h3>技术让生活更美</h3>
+        <!-- 右下角的初次使用导航 -->
+        <a href="#" style="position:absolute;bottom:0;right:15px">
+          <p style="color:#ccc;font-size:15px;">项目简介 <small class="glyphicon glyphicon-chevron-right" style="color:inherit"></small>
+          </p>
+        </a>
+      </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="container">
+      <div class="row">
+        <!-- 右侧卡片式部位分类 -->
+        <div class="col-md-7 col-md-push-5" style="padding:10px;padding-top:0;margin-top:10px;padding-bottom:0">
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> 添加新设备 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px;padding-top:15px">
+            <form id="form_addDevice" onsubmit="return ajaxPost()" method="post" style="padding:0">
+              {% csrf_token %}
+              <!-- 选择类型 -->
+              <p style="color:#333">
+                <span class="pull-left" style="margin-right:34px">类型：</span>
+                <!-- 下拉选择框 -->
+                <select name="deviceType" class="pull-left" style="white-space:nowrap;width:240px;height:25px;padding:0" required>
+                  <option value=""></option>
+                {% for cla in classes %}
+                  <option value="{{cla.value}}">{{cla.name}}传感设备</option>
+                {% endfor %}
+                </select>
+                <div style="clear:both"></div>
+              </p>
+              <!-- 命名 -->
+              <p style="color:#333">
+                <span style="margin-right:30px">命名：</span>
+                <input name="deviceName" type="text" value="" style="width:240px;padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" placeholder="起个好听易记的名字吧" required>
+              </p>
+              <!-- 安全范围 -->
+              <p style="color:#333">
+                <span>安全范围：</span>
+                <!-- 最小值 -->
+                <input name="safety_min" size="6" type="text" value="" style="padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" placeholder="最小值">
+                 至 
+                <!-- 最大值 -->
+                <input name="safety_max" size="6" type="text" value="" style="padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" placeholder="最大值">
+              </p>
+              <p style="color:#A9A9A9">
+                 (提示：“安全范围”项可不填。若设置最小值或最大值，当设备检测的数据超出该范围时，系统将自动产生报警信息)
+              </p>
+              <button class="pull-right btn btn-link" style="color:#333;font-weight:bold" type="submit">提交</button>
+            </form>
+            <br/><br/>
+          </div>
+      {% for cla in sensors %}
+        {% if cla.items %}
+          <!-- 传感设备分类 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px"> {{cla.type}}传感设备 </p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+          {% for sensor in cla.items %}
+            <!-- 传感设备实物 -->
+            <a name="{{sensor.name}}"></a>
+            <p id="{{sensor.id}}" style="color:#333;font-weight:bold;margin-bottom:10px"> {{sensor.name}} </p>
+            <!-- 提交地址 -->
+            <p style="color: #333">
+              数据提交地址：http://<script type="text/javascript">document.write(window.location.hostname)</script>{{sensor.submitUrl}}
+            </p>
+            <!-- 雷达 -->
+            <p style="color: #333">
+              <a role="button" onclick="toRadar('{{sensor.id}}')">
+              <small class="glyphicon glyphicon-wrench"></small>
+              添加至雷达重点检测</a>
+            </p>
+            <!-- 修改安全范围 -->
+            <p style="color: #333">
+              <a data-toggle="modal" data-target="#{{sensor.id}}_modal" role="button" style="font-weight:normal">
+              <small class="glyphicon glyphicon-wrench"></small>
+              修改安全范围</a>
+            </p>
+            <!-- modal：悬浮窗口 -->
+            <div class="modal fade" id="{{sensor.id}}_modal" role="dialog" aria-labelledby="查看实时截图" ariahidden="true">
+              <div class="modal-dialog" style="margin-top:100px">
+                <div class="modal-content">
+                <!-- form表格 -->
+                <form id="{{sensor.id}}_form_safeCon" onsubmit="return safetyCon('{{sensor.id}}')" method="post" style="padding:0">
+                  {% csrf_token %}
+                  <!-- 顶部和标题 -->
+                  <div class="modal-header">
+                    <!-- 关闭按钮 -->
+                    <button class="close" data-dismiss="modal" aria-hidden="true"> &times </button>
+                    <p class="modal-title" style="font-size:17px;font-weight:bold">修改安全范围</p>
+                  </div>
+                  <!-- body，内容部分 -->
+                  <div class="modal-body" style="min-height:70%;font-weight:normal">
+                    <p>
+                    为“{{sensor.name}}”的安全范围修改为：
+                    </p>
+                    <input type="hidden" name="sensorId" value="{{sensor.id}}">
+                    <!-- 最小值 --> 
+                    <input name="safety_min" size="12" type="text" value="" style="padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" placeholder="{% if sensor.safety_min %}{{sensor.safety_min}}{% endif %}">
+                     至 
+                    <!-- 最大值 -->
+                    <input name="safety_max" size="12" type="text" value="" style="padding-left:5px;border: 1px solid #c0c0c0;border-radius:2px" placeholder="{% if sensor.safety_max %}{{sensor.safety_max}}{% endif %}">
+                  </div>
+                  <!-- 底部 -->
+                  <div class="modal-footer" style="font-weight:normal">
+                    <button class="pull-right btn btn-link" style="color:#333" type="submit">确定</button>
+                  </div>
+                </form><!-- <form> -->
+                </div><!-- modal-content -->
+              </div><!-- modal-dialog -->
+            </div><!-- modal -->
+            <!-- 删除 -->
+            <p style="color: #333">
+              <a role="button" onclick="deleteSensor('{{sensor.name}}', '{{sensor.id}}')">
+              <small class="glyphicon glyphicon-exclamation-sign"></small>
+              删除</a>
+            </p>
+            <br/>
+          {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+        </div> <!-- col -->
+        <!-- 左侧col -->
+        <div class="col-md-5 col-md-pull-7" style="padding:10px;padding-top:0">
+          <!-- 上边黑条 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">快速查找</p>
+          </div>
+          <div class="card" style="font-weight:bold;color:#333;font-size:15px">
+            <!-- 快速查找设备 -->
+            <div style="width:100%;height:34px;">
+              <!-- 确定按钮 -->
+              <button id="find" onclick="findItem()" class="pull-right btn btn-default" style="border-top-left-radius:0;border-bottom-left-radius:0"> 确定 </button>
+              <!-- 搜索框 -->
+              <div style="overflow:hidden;font-weight:normal;">
+                <input id="searchBox" style="width:100%;height:34px;padding-left:5px;background-color:#fff;border: 1px solid #c0c0c0;border-right:0;border-top-left-radius:4px;border-bottom-left-radius:4px;" placeholder="快速查找设备..." onkeydown="if(event.keyCode==13){searchBox.blur();findItem()}" />
+              </div>
+            </div>
+            <br/>
+            <br/>
+          </div>
+          <!-- 关于我们 -->
+          <div class="card-header">
+            <p style="padding-top:8px;color:#7B7A7A;font-size:17px">Powered by</p>
+          </div>
+          <div class="card" style="color:#333;font-size:15px">
+            <!-- 指导老师 -->
+            <div style="text-align: center;">
+              <h3 style="color: #333;margin-top:10px;margin-bottom:15px">
+              徐兴</h3>
+            </div>
+            <p>指导老师。电子工程学院副高级教授</p>
+            <p>XXXXXXXXXXXXXXX</p>
+            <!-- 分界线 -->
+            <div class="dividing_line"></div>
+            <!-- Ivan -->
+            <div class="img-head" style="margin-top:9px">
+              <img src="{% static 'img/Ivan1.jpg' %}" class="img-responsive" />
+            </div>
+            <div style="text-align: center;">
+              <h3 style="color: #333;margin-top:10px;margin-bottom:15px">
+              文鹏程 - Ivan</h3>
+            </div>
+            <p>华南农业大学12光信1班，产品、技术、智能硬件爱好者</p>
+            <p>XXXXXXXXXXXXXXX</p>
+            <br/>
+          </div><!-- card -->
+        </div><!-- col -->
+      </div><!-- row -->
+    </div><!-- container -->
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.js' %}"></script>
+    <!-- 快速寻找并定位至页面内设备 -->
+    <script type="text/javascript">
+      function findItem(){
+        // 获取搜索框内的值并在items中寻找该设备
+        var target = $("#searchBox").val();
+        if(typeof document.getElementsByName(target)[0]=="object"){
+          window.location.href = '#' + target;
+        }
+        else{
+          alert('未找到名为“'+target+'”的设备');
+          document.getElementById("searchBox").focus();
+        }
+      };
+    </script>
+    <!-- 删除设备 -->
+    <script type="text/javascript">
+      function deleteSensor(sensorName, sensorId){
+        var c = confirm('你确定要删除“'+sensorName+'”吗？');
+        if(c==true){
+          $.ajax({
+            type: "GET",
+            url: "/api/deletesensor/?id="+sensorId,
+            success: function(info){
+              // alert(data.result);
+              if(info.result=="success"){
+                alert("删除成功");
+                window.location.reload();
+              }
+              else{
+                alert('删除失败。具体原因：\n'+info.msg);
+              }
+            }
+          });
+        }
+      };
+    </script>
+    <!-- 添加至雷达监控 -->
+    <script type="text/javascript">
+      function toRadar(sensorId) {
+        $.ajax({
+          type: "GET",
+          url: "/api/toradar/?id="+sensorId,
+          success: function(info){
+            if(info.result=="success"){
+              alert("添加成功！");
+            }
+            else{
+              alert('添加失败。具体原因：\n'+info.msg);
+            }
+          }
+        });
+      };
+    </script>
+    <!-- ajax提交表单创建新设备 -->
+    <script type="text/javascript">
+      function ajaxPost(){
+        // alert('ajax');
+        var $form = $("#form_addDevice");
+        var formData = new FormData($form.get(0));
+        $.ajax({
+          url: '/api/create/',
+          type: 'POST',
+          data: formData,
+          processData: false, // 告诉jQuery不要去处理发送的数据
+          contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+          success: function(info){
+             //处理取得的result
+            if (info.result=="success"){
+              alert("恭喜！“"+info.sensorName+"”创建成功！\n该设备的数据提交接口是\n“http://"+window.location.hostname+info.submitUrl+"”\n下一步，请将传感设备的实时数据发送至提交接口，把数据值填在接口最后(即“val=”后边)");
+              window.location.reload();
+            }
+            else{
+              alert('添加失败。具体原因：\n'+info.msg);
+            }
+          }
+        });
+        return false;
+      }
+    </script>
+    <!-- ajax修改安全范围 -->
+    <script type="text/javascript">
+      function safetyCon(sensorId){
+        var $form = $("#"+sensorId+"_form_safeCon");
+        var formData = new FormData($form.get(0));
+        $.ajax({
+          url: '/api/safetycon/',
+          type: 'POST',
+          data: formData,
+          processData: false, // 告诉jQuery不要去处理发送的数据
+          contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+          success: function(info){
+             //处理取得的result
+            if (info.result=="success"){
+              // 定位至modal并关闭
+              $("#"+sensorId+"_modal").modal('hide');
+              alert("修改成功");
+              window.location.reload();
+            }
+            else{
+              alert("修改失败，具体原因: \n"+info.msg);
+            };
+          }
+        });
+        return false;
+      }
+    </script>
+
+  </body>
+</html>

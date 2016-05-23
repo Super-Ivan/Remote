@@ -1,0 +1,9 @@
+version: 1.1
+static:
+    - path: /static/
+      files: /static/
+      expire: 30d
+    - path: /favicon.ico
+      files: /favicon.ico
+      expire: 1y
+

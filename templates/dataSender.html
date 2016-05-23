@@ -1,0 +1,54 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title> 模拟发送数据 </title>
+  </head>
+  <body role="document">
+    <p>运行中</p>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <!-- 开始更新数据 -->
+    <script type="text/javascript">
+      var urls = [
+          'http://localhost:8080/api/submit/?id=sensor1&token=cgujUFmx&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor2&token=JfcZQseA&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor4&token=grNIfUZe&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor5&token=PUcPKJjo&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor3&token=RFuJKlKJ&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor6&token=vtfNxirt&step=10&unit=&val=',
+          'http://localhost:8080/api/submit/?id=sensor7&token=ibtbynaE&step=10&unit=&val=',
+          // 'http://localhost:8080/api/submit/?id=sensor10&token=dtcPblNH&step=10&unit=m/s²&val=',
+          ];
+      (function(){sender()})();
+      // 随后，每隔N秒重新查询数据、绘制表格
+      onload = function(){
+      setInterval(function(){
+        sender();
+        }, 2000);
+      };
+      function sender(){
+        $.each(urls, function(i, url){
+          var num = parseInt(Math.random() * 100);
+          $.ajax({
+            type: "GET",
+            url: url+num,
+            async: false,  // 不使用异步请求，使得获得最新数据最后再绘制第一次表格
+            // success: function(data){
+            //   radarUpdater(data.radar_data);
+            //   dataFiller(data.sensors_data);
+            // }
+          });
+        });   
+        // 查询
+
+      };
+    </script>
+  </body>
+</html>

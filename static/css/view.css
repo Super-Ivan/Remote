@@ -1,0 +1,143 @@
+body {
+  font-family: 微软雅黑, Arial;
+  /*padding-top: 50px;*/
+  padding-bottom: 30px;
+  background-color: #EDEDED;
+}
+.header {
+  background: url("../img/bg1.jpg") no-repeat;
+  background-color: #000;
+  background-size: 100% auto;
+  background-position: center;
+  height: 150px;
+  margin-bottom: 10px;
+  -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}
+.header h3 {
+  color:#ccc;
+  margin-top: 40px;
+}
+.card {
+  background-color: #F8F8F8;
+  margin-bottom: 20px;
+  padding-top: 25px;
+  padding-bottom: 0;
+  padding-left: 15px;
+  padding-right: 15px;
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  overflow: hidden;
+}
+.card-header {
+  padding-left: 15px;
+  padding-right: 15px;
+  height: 40px;
+  background-color: #000;
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
+}
+/*img-card
+作用:使img图片保持恒定的横纵比
+原理:padding(百分比)能以父级容器的width为基准*/
+.img-card {
+  background-color: #000;
+  padding-bottom: 60%;
+  clear: both;
+  overflow: hidden;
+  width: auto;
+  height: 0;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+.img-head {
+  background-color: #ccc;
+  text-align: center;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: auto;
+  margin-left: auto;
+  width: 80px;
+  height: 80px;
+}
+.dividing_line {
+  margin: 10px 0 10px;
+  border-bottom: 1px solid #ccc;
+}
+.portal,
+.portal-card {
+  width: auto;
+  left: 0;
+  right: 0;
+  padding: 5px 0;
+  font-size: 15px;
+  list-style: none;
+}
+.portal > li > a,
+.portal-card > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+}
+.portal > li > a:hover,
+.portal-card > li > a:hover,
+.portal > li > a:focus,
+.portal-card > li > a:focus {
+  text-decoration: none;
+  background-color: #eee;
+}
+.progress-frame {
+  margin-top: 10px;
+  width: 100%;
+  height: 3px;
+  background-color: #365268;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+.power-bar {
+  width: auto;
+  background-color: #fff;
+  height: 3px;
+  float: left;
+}
+.power-point {
+  content:'';
+  float: left;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: #fff;
+  position: relative;
+  top: -8px;
+  left: -10px;
+  background: -o-radial-gradient(#fff, rgba(0,0,0,0.05)); /* Opera 11.6 - 12.0 */
+  background: -moz-radial-gradient(#fff, rgba(0,0,0,0.05)); /* Firefox 3.6 - 15 */
+  background: radial-gradient(#fff, rgba(0,0,0,0.05)); /* 标准的语法 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, .05);
+}
+a {
+  text-decoration:none !important;
+  color:inherit;
+}
+@media screen and (min-width: 992px) {
+  .header {
+    height: 240px;
+  }
+  .header h3 {
+    margin-top: 60px;
+    font-size: 36px;
+  }
+  .col-md-5 {
+    margin-top: 10px;
+  }
+  .card,
+  .card-header {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+}
