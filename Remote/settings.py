@@ -75,24 +75,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Remote.wsgi.application'
 
 
-# try:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'rpfom9928i9807r4',
-#             'USER': 'rpfom9928i9807r4',
-#             'PASSWORD': '2350106wpc',
-#             'HOST': 'rdsk026fa925dt57jd81.mysql.rds.aliyuncs.com',
-#             'PORT': '3306',
-#         }
-#     }
-# except:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
